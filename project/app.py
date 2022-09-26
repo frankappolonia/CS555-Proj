@@ -1,10 +1,15 @@
 import os
 from pprint import pprint
-working_directory = os.getcwd()
-file_path = working_directory + "myFamily.ged"
+from prettytable import PrettyTable
+from datetime import date
+import traceback
 
-f = open(working_directory + "/myFamily.ged")
-results = open("output.txt", "w")
+working_directory = os.getcwd()
+input_file = working_directory + "/../myFamily.ged"
+output_file = working_directory + "/../output.txt"
+
+f = open(input_file)
+results = open(output_file, "w")
 
 
 validTags = set({"INDI", "NAME", "SEX", "BIRT", "DEAT", "FAMC", "FAMS", "FAM", "MARR", "HUSB", "WIFE", "CHIL", "DIV", "DATE", "HEAD", "TRLR", "NOTE"})
@@ -69,7 +74,7 @@ parsing_indi = False
 parsing_fam = False
 curr_name = ""
 curr = {}
-with open("output.txt", 'r') as filehandle:
+with open(output_file, 'r') as filehandle:
     for line in filehandle:
         if "<--" in line:
             print(line)
@@ -112,3 +117,126 @@ elif curr != {} and parsing_indi:
     
 pprint(families)
 pprint(individuals)
+
+### Print table with individuals and families ###
+
+# helper dict for converting string dates to date objects
+convert_month = {
+    "JAN" : 1,
+    "FEB" : 2,
+    "MAR" : 3,
+    "APR" : 4,
+    "MAY" : 5,
+    "JUN" : 6,
+    "JUL" : 7,
+    "AUG" : 8,
+    "SEP" : 9,
+    "OCT" : 10,
+    "NOV" : 11,
+    "DEC" : 12
+}
+
+## individuals table
+itable = PrettyTable()
+itable.title = "Individuals"
+itable.field_names = ["ID","Name","Gender","Birthday","Age","Alive","Death","Child","Spouse"]
+
+for i in individuals:
+    try:
+        to_add = []
+        info = individuals[i]
+
+        ## Add info field by field
+        to_add.append(i[1:-1]) # remove @ signs on beginning and end
+        to_add.append(info['NAME'])
+        to_add.append(info['SEX'])
+        # convert birthdate to date object
+        bd = info['DATE'].split()
+        bd = date(int(bd[2]), convert_month[bd[1]], int(bd[0]))
+        to_add.append(bd.isoformat())
+        # compute age
+        today = date.today()
+        age = today.year - bd.year -((today.month, today.day) < (bd.month, bd.day))
+        to_add.append(age)
+        if('DEAT' in info and info['DEAT'] == 'Y'):
+            to_add.append("False")
+            to_add.append("TODO")
+            ## TODO: Death date
+        else:
+            to_add.append("True")
+            to_add.append("NA")
+
+        if('FAMC' in info):
+            temp = []
+            for j in info['FAMC'].split(' '):
+                temp.append(j[1:-1]) # remove @ signs on beginning and end
+            to_add.append(temp)
+        else:
+            to_add.append("NA")
+
+        if('FAMS' in info):
+            temp = []
+            for j in info['FAMS'].split(' '):
+                temp.append(j[1:-1]) # remove @ signs on beginning and end
+            to_add.append(temp)
+        else:
+            to_add.append("NA")    
+        
+        itable.add_row(to_add)
+    except Exception:
+        print("Error with individual " + i)
+        print("Info: ", individuals[i])
+        traceback.print_exc()
+        print()
+
+## families table
+ftable = PrettyTable()
+ftable.title = "Families"
+ftable.field_names = ["ID","Married","Divorced","Husband ID","Husband Name","Wife ID","Wife Name","Children"]
+
+for i in families:
+    try:
+        to_add = []
+        info = families[i]
+
+        ## Add info field by field
+        to_add.append(i[1:-1]) # remove @ signs on beginning and end
+
+        # format marriage date
+        md = info['DATE'].split()
+        md = date(int(md[2]), convert_month[md[1]], int(md[0]))
+        to_add.append(md.isoformat())
+
+        if('DIV' in info and info['DIV'] == 'Y'):
+            to_add.append("TODO")
+            ## TODO: Divorce date
+        else:
+            to_add.append("NA")
+        
+        to_add.append(info['HUSB'][1:-1]) # remove @ signs on beginning and end
+        # get husband name
+        to_add.append(individuals[info['HUSB']]['NAME'])
+
+        to_add.append(info['WIFE'][1:-1]) # remove @ signs on beginning and end
+        # get wife name
+        to_add.append(individuals[info['WIFE']]['NAME'])
+
+        if('CHIL' in info and info['CHIL'].strip() != ''):
+            temp = []
+            for j in info['CHIL'].split(' '):
+                temp.append(j[1:-1]) # remove @ signs on beginning and end
+            to_add.append(temp)
+        else:
+            to_add.append("NA")
+         
+        
+        ftable.add_row(to_add)
+    except Exception:
+        print("Error with family " + i)
+        print("Info: ", families[i])
+        traceback.print_exc()
+        print()
+
+print(itable)
+print(ftable)
+
