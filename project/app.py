@@ -74,10 +74,10 @@ parsing_indi = False
 parsing_fam = False
 curr_name = ""
 curr = {}
+prev_line = ""
 with open(output_file, 'r') as filehandle:
     for line in filehandle:
         if "<--" in line:
-            print(line)
             fields = line.strip("<-- ").strip("\n").split("|")
             # case 1: let's start parsing a new individual or family
             if fields[0] == '0':
@@ -101,7 +101,17 @@ with open(output_file, 'r') as filehandle:
                     curr_name = fields[3]
             # case 2: let's add info to the individual or family
             elif (parsing_fam or parsing_indi) and fields[2] == "Y":
-                curr[fields[1]] = fields[3]
+                if fields[1] in curr:
+                    if fields[1] == 'DATE':
+                        curr[prev_line[1]] = fields[3]
+                    if fields[1] == "FAMS":
+                        curr[fields[1]].append(fields[3])
+                elif fields[1] == "FAMS":
+                    curr[fields[1]] = [fields[3]]
+                else:
+                    curr[fields[1]] = fields[3]
+
+            prev_line = fields
 
 # Add in the last added info             
 if curr != {} and parsing_fam:
@@ -158,10 +168,11 @@ for i in individuals:
         today = date.today()
         age = today.year - bd.year -((today.month, today.day) < (bd.month, bd.day))
         to_add.append(age)
-        if('DEAT' in info and info['DEAT'] == 'Y'):
+        if('DEAT' in info and info['DEAT'] != 'N'):
             to_add.append("False")
-            to_add.append("TODO")
-            ## TODO: Death date
+            dd = info['DEAT'].split()
+            dd = date(int(dd[2]), convert_month[dd[1]], int(dd[0]))
+            to_add.append(dd.isoformat())
         else:
             to_add.append("True")
             to_add.append("NA")
@@ -176,7 +187,7 @@ for i in individuals:
 
         if('FAMS' in info):
             temp = []
-            for j in info['FAMS'].split(' '):
+            for j in info['FAMS']:
                 temp.append(j[1:-1]) # remove @ signs on beginning and end
             to_add.append(temp)
         else:
@@ -207,9 +218,10 @@ for i in families:
         md = date(int(md[2]), convert_month[md[1]], int(md[0]))
         to_add.append(md.isoformat())
 
-        if('DIV' in info and info['DIV'] == 'Y'):
-            to_add.append("TODO")
-            ## TODO: Divorce date
+        if('DIV' in info and info['DIV'] != 'N'):
+            dd = info['DIV'].split()
+            dd = date(int(dd[2]), convert_month[dd[1]], int(dd[0]))
+            to_add.append(dd.isoformat())
         else:
             to_add.append("NA")
         
