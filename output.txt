@@ -335,8 +335,8 @@
 --> 1 BIRT
 <-- 1|N|BIRT
 
---> 2 DATE 1972
-<-- 2|DATE|Y|1972
+--> 2 DATE 1 JAN 1972
+<-- 2|DATE|Y|1 JAN 1972
 
 --> 1 FAMC @F4@
 <-- 1|FAMC|Y|@F4@
