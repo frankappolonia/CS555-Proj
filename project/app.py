@@ -182,7 +182,7 @@ def storeInDataStructures():
 
 
 ## individuals table
-def createIndividualsTable():
+def createIndividualsTable(individuals):
     itable = PrettyTable()
     itable.title = "Individuals"
     itable.field_names = ["ID","Name","Gender","Birthday","Age","Alive","Death","Child","Spouse"]
@@ -240,7 +240,7 @@ def createIndividualsTable():
 
 
 ## families table
-def createFamiliesTable():
+def createFamiliesTable(families):
     ftable = PrettyTable()
     ftable.title = "Families"
     ftable.field_names = ["ID","Married","Divorced","Husband ID","Husband Name","Wife ID","Wife Name","Children"]
@@ -292,7 +292,7 @@ def createFamiliesTable():
 
 
 ## gets all deceased family members
-def getDeceased():
+def getDeceased(individualsTable):
     deceased = []
     for row in individualsTable:
         if (row.get_string(fields=["Alive"]).find('False')) != -1:
@@ -348,17 +348,17 @@ if __name__ == "__main__":
     individuals, families = storedData
 
     # create data table
-    individualsTable = createIndividualsTable()
-    familiesTable = createFamiliesTable()
+    individualsTable = createIndividualsTable(individuals)
+    familiesTable = createFamiliesTable(families)
 
     # print table with individuals and families
     print(individualsTable)
     print(familiesTable)
 
     # create and print deceased family
-    deceased = getDeceased()
+    deceased = getDeceased(individualsTable)
     print("\nDeceased:", deceased)
-
+    
     # check for errors
     errors = findErrors(individuals, families)
     print("\nErrorrs:" + (" None" if errors == [] else ""))
