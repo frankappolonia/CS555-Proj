@@ -3,75 +3,97 @@ from pprint import pprint
 from tkinter.font import families
 from prettytable import PrettyTable
 from datetime import date
+from datetime import datetime
 import traceback
 
+# GLOBALS
 working_directory = os.getcwd()
-
 
 input_file = working_directory + "./myFamily.ged"
 output_file = working_directory + "./output.txt"
 #input_file = working_directory + "/../myFamily.ged"
 #output_file = working_directory + "/../output.txt"
 
-f = open(input_file)
-results = open(output_file, "w")
+
+# helper dict for converting string dates to date objects
+convert_month = {
+    "JAN" : 1,
+    "FEB" : 2,
+    "MAR" : 3,
+    "APR" : 4,
+    "MAY" : 5,
+    "JUN" : 6,
+    "JUL" : 7,
+    "AUG" : 8,
+    "SEP" : 9,
+    "OCT" : 10,
+    "NOV" : 11,
+    "DEC" : 12
+}
 
 
-validTags = set({"INDI", "NAME", "SEX", "BIRT", "DEAT", "FAMC", "FAMS", "FAM", "MARR", "HUSB", "WIFE", "CHIL", "DIV", "DATE", "HEAD", "TRLR", "NOTE"})
+## Parse Data
+def parseData():
+    f = open(input_file)
+    results = open(output_file, "w")
 
-for line in f:
-    '''Loops through each line of the GEDCOM file'''
 
-    #1. first, write the original line as input
-    results.write("--> " + line)
+    validTags = set({"INDI", "NAME", "SEX", "BIRT", "DEAT", "FAMC", "FAMS", "FAM", "MARR", "HUSB", "WIFE", "CHIL", "DIV", "DATE", "HEAD", "TRLR", "NOTE"})
 
-    #2. Next, build the output line
-    
-    #2a. the output line always starts with the ouput arrow + the number in the line (either a 0, 1 or 2)
-    output = "<-- " + line[:1] + "|"
+    for line in f:
+        '''Loops through each line of the GEDCOM file'''
 
-    #3. from here, there are 3 scenarios for how the rest of the line could be. we iterate through the line and slice it
-        # based on the scenario
-    for i in range(2, len(line)):
+        #1. first, write the original line as input
+        results.write("--> " + line)
 
-        #3a. Scenario 1 - id is before tag (i.e. 0 @I2@ INDI)
-        if line[i] == "@":
-            _id = line[i: line.find("@", i+1)+1]
-            tag = line[line.find("@",i+1)+2:].strip()
-            output += tag
-            if tag in validTags:
-                output += "|Y|"
-            else:
-                output += "|N|"
-            output += _id
-            break
-            
-        #3b. scenario 2 - line is in standard format (i.e SOUR Family Echo)
-        if line[i] == " ":
-            tag = line[2:i]
-            output += tag 
-            if tag in validTags:
-                output += "|Y|"
-            else:
-                output += "|N|"
-            output += line[i+1:]
-            break
+        #2. Next, build the output line
         
-        #3c. scenario 3 - Only two values, number and tag only (i.e. 1 BIRT)
-        if i == len(line)-1:
-            tag = line[2:]
-            if tag in validTags:
-                output += "Y|"+line[2:]
-            else:
-                output += "N|"+line[2:]
+        #2a. the output line always starts with the ouput arrow + the number in the line (either a 0, 1 or 2)
+        output = "<-- " + line[:1] + "|"
 
-    results.write(output + "\n")
+        #3. from here, there are 3 scenarios for how the rest of the line could be. we iterate through the line and slice it
+            # based on the scenario
+        for i in range(2, len(line)):
 
-f.close()
-results.close()
+            #3a. Scenario 1 - id is before tag (i.e. 0 @I2@ INDI)
+            if line[i] == "@":
+                _id = line[i: line.find("@", i+1)+1]
+                tag = line[line.find("@",i+1)+2:].strip()
+                output += tag
+                if tag in validTags:
+                    output += "|Y|"
+                else:
+                    output += "|N|"
+                output += _id
+                break
+                
+            #3b. scenario 2 - line is in standard format (i.e SOUR Family Echo)
+            if line[i] == " ":
+                tag = line[2:i]
+                output += tag 
+                if tag in validTags:
+                    output += "|Y|"
+                else:
+                    output += "|N|"
+                output += line[i+1:]
+                break
+            
+            #3c. scenario 3 - Only two values, number and tag only (i.e. 1 BIRT)
+            if i == len(line)-1:
+                tag = line[2:]
+                if tag in validTags:
+                    output += "Y|"+line[2:]
+                else:
+                    output += "N|"+line[2:]
+
+        results.write(output + "\n")
 
 
-### Store the results in data structures ###
+    f.close()
+    results.close()
+
+
+## Store the results in data structures
 def storeInDataStructures():
     individuals = {}
     families = {}
@@ -134,7 +156,6 @@ def storeInDataStructures():
                 print(Exception)
 
     # Add in the last added info
-
     try:          
         if curr != {} and parsing_fam:
             families[curr_name] = curr
@@ -159,30 +180,6 @@ def storeInDataStructures():
     
     return individuals, families
 
-storedData = storeInDataStructures()
-individuals, families = storedData
-
-    
-#pprint(families)
-#pprint(individuals)
-
-### Print table with individuals and families ###
-
-# helper dict for converting string dates to date objects
-convert_month = {
-    "JAN" : 1,
-    "FEB" : 2,
-    "MAR" : 3,
-    "APR" : 4,
-    "MAY" : 5,
-    "JUN" : 6,
-    "JUL" : 7,
-    "AUG" : 8,
-    "SEP" : 9,
-    "OCT" : 10,
-    "NOV" : 11,
-    "DEC" : 12
-}
 
 ## individuals table
 def createIndividualsTable():
@@ -241,6 +238,7 @@ def createIndividualsTable():
 
     return itable
 
+
 ## families table
 def createFamiliesTable():
     ftable = PrettyTable()
@@ -292,8 +290,6 @@ def createFamiliesTable():
             print()
     return ftable
 
-individualsTable = createIndividualsTable()
-familiesTable = createFamiliesTable()
 
 ## gets all deceased family members
 def getDeceased():
@@ -305,10 +301,67 @@ def getDeceased():
             deceased.append(val[15:])
     return deceased
 
-    
 
-print(individualsTable)
-print(familiesTable)
-deceased = getDeceased()
-print(deceased)
+## find marriage before birth errors
+def marriageBeforeBirthErrors(individuals, families):
+    errors = []
+    for f in families:
+        if families[f]["HUSB"] in individuals and families[f]["WIFE"] in individuals:
+            marr = (datetime.strptime(families[f]["DATE"], "%d %b %Y"))
+            b1 = (datetime.strptime(individuals[families[f]["HUSB"]]["DATE"], "%d %b %Y"))
+            b2 = (datetime.strptime(individuals[families[f]["WIFE"]]["DATE"], "%d %b %Y"))
+            if marr < b1:
+                h_id = families[f]["HUSB"]
+                errors.append(f"Error: Husband {h_id} of family {f} has a birth date after their marriage date")
+            if marr < b2:
+                w_id = families[f]["WIFE"]
+                errors.append(f"Error: Wife {w_id} of family {f} has a birth date after their marriage date")
+    return errors
+
+
+## find death before birth errors
+def deathBeforeBirthErrors(individuals):
+    errors = []
+    for i in individuals:
+        if "DEAT" in individuals[i]:
+            birth = (datetime.strptime(individuals[i]["DATE"], "%d %b %Y"))
+            death = (datetime.strptime(individuals[i]["DEAT"], "%d %b %Y"))
+            if death < birth:
+                errors.append(f"Error: Individual {i} has a birth date after their death date")
+    return errors
+ 
+
+## find errors
+def findErrors(individuals, families):
+    errors = []
+    errors+=marriageBeforeBirthErrors(individuals, families)
+    errors+=deathBeforeBirthErrors(individuals)
+    return errors
+
+## main
+if __name__ == "__main__":
+    # parse data
+    parseData()
+
+    # store data
+    storedData = storeInDataStructures()
+    individuals, families = storedData
+
+    # create data table
+    individualsTable = createIndividualsTable()
+    familiesTable = createFamiliesTable()
+
+    # print table with individuals and families
+    print(individualsTable)
+    print(familiesTable)
+
+    # create and print deceased family
+    deceased = getDeceased()
+    print("\nDeceased:", deceased)
+
+    # check for errors
+    errors = findErrors(individuals, families)
+    print("\nErrorrs:" + (" None" if errors == [] else ""))
+    for error in errors:
+        print(f" - {error}")
 
