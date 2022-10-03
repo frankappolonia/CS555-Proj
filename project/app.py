@@ -1,12 +1,17 @@
 import os
 from pprint import pprint
+from tkinter.font import families
 from prettytable import PrettyTable
 from datetime import date
 import traceback
 
 working_directory = os.getcwd()
-input_file = working_directory + "/../myFamily.ged"
-output_file = working_directory + "/../output.txt"
+
+
+input_file = working_directory + "./myFamily.ged"
+output_file = working_directory + "./output.txt"
+#input_file = working_directory + "/../myFamily.ged"
+#output_file = working_directory + "/../output.txt"
 
 f = open(input_file)
 results = open(output_file, "w")
@@ -67,66 +72,99 @@ results.close()
 
 
 ### Store the results in data structures ###
-individuals = {}
-families = {}
+def storeInDataStructures():
+    individuals = {}
+    families = {}
 
-parsing_indi = False
-parsing_fam = False
-curr_name = ""
-curr = {}
-prev_line = ""
-with open(output_file, 'r') as filehandle:
-    for line in filehandle:
-        if "<--" in line:
-            fields = line.strip("<-- ").strip("\n").split("|")
-            # case 1: let's start parsing a new individual or family
-            if fields[0] == '0':
-                # first, save any previous info
-                if curr != {} and parsing_fam:
-                    families[curr_name] = curr
-                    curr = {}
-                    curr_name = ""
-                    parsing_fam = False
-                elif curr != {} and parsing_indi:
-                    individuals[curr_name] = curr
-                    curr = {}
-                    curr_name = ""
-                    parsing_indi = False
-                # then, set up the new info
-                if fields[1] == "INDI":
-                    parsing_indi = True
-                    curr_name = fields[3]
-                elif fields[1] == "FAM":
-                    parsing_fam = True
-                    curr_name = fields[3]
-            # case 2: let's add info to the individual or family
-            elif (parsing_fam or parsing_indi) and fields[2] == "Y":
-                if fields[1] in curr:
-                    if fields[1] == 'DATE':
-                        curr[prev_line[1]] = fields[3]
-                    if fields[1] == "FAMS":
-                        curr[fields[1]].append(fields[3])
-                elif fields[1] == "FAMS":
-                    curr[fields[1]] = [fields[3]]
-                else:
-                    curr[fields[1]] = fields[3]
+    #validation for same name/birthdate
+    nameBirthValidate = {}
 
-            prev_line = fields
-
-# Add in the last added info             
-if curr != {} and parsing_fam:
-    families[curr_name] = curr
-    curr = {}
-    curr_name = ""
-    parsing_fam = False
-elif curr != {} and parsing_indi:
-    individuals[curr_name] = curr
-    curr = {}
-    curr_name = ""
     parsing_indi = False
+    parsing_fam = False
+    curr_name = ""
+    curr = {}
+    prev_line = ""
+    with open(output_file, 'r') as filehandle:
+        for line in filehandle:
+            try:
+                if "<--" in line:
+                    fields = line.strip("<-- ").strip("\n").split("|")
+                    # case 1: let's start parsing a new individual or family
+                    if fields[0] == '0':
+                        # first, save any previous info
+                        if curr != {} and parsing_fam:
+                            families[curr_name] = curr
+                            curr = {}
+                            curr_name = ""
+                            parsing_fam = False
+                        elif curr != {} and parsing_indi:
+
+                            #before adding invidual to individuals datastructure, verify the same name/birthdate combo is not already present
+                            if curr['NAME'] in nameBirthValidate:
+                                if curr['DATE'] == nameBirthValidate['NAME']:
+                                    raise Exception("Error: duplicate indivudal found in ged file!")
+                            else:
+                                nameBirthValidate[curr['NAME']] = curr['DATE'] #add invidual name + birthday to duplicate validator 
+                                
+                                individuals[curr_name] = curr
+                                curr = {}
+                                curr_name = ""
+                                parsing_indi = False
+                        # then, set up the new info
+                        if fields[1] == "INDI":
+                            parsing_indi = True
+                            curr_name = fields[3]
+                        elif fields[1] == "FAM":
+                            parsing_fam = True
+                            curr_name = fields[3]
+                    # case 2: let's add info to the individual or family
+                    elif (parsing_fam or parsing_indi) and fields[2] == "Y":
+                        if fields[1] in curr:
+                            if fields[1] == 'DATE':
+                                curr[prev_line[1]] = fields[3]
+                            if fields[1] == "FAMS":
+                                curr[fields[1]].append(fields[3])
+                        elif fields[1] == "FAMS":
+                            curr[fields[1]] = [fields[3]]
+                        else:
+                            curr[fields[1]] = fields[3]
+
+                    prev_line = fields
+            except Exception:
+                print(Exception)
+
+    # Add in the last added info
+
+    try:          
+        if curr != {} and parsing_fam:
+            families[curr_name] = curr
+            curr = {}
+            curr_name = ""
+            parsing_fam = False
+
+        elif curr != {} and parsing_indi:
+            #before adding invidual to individuals datastructure, verify the same name/birthdate combo is not already present
+            if curr['NAME'] in nameBirthValidate:
+                if curr['DATE'] == nameBirthValidate['NAME']:
+                    raise Exception("Error: duplicate indivudal found in ged file!")
+            else:
+                nameBirthValidate[curr['NAME']] = curr['DATE'] #add invidual name + birthday to duplicate validator 
+                individuals[curr_name] = curr
+                curr = {}
+                curr_name = ""
+                parsing_indi = False
+
+    except Exception:
+            print(Exception)
     
-pprint(families)
-pprint(individuals)
+    return individuals, families
+
+storedData = storeInDataStructures()
+individuals, families = storedData
+
+    
+#pprint(families)
+#pprint(individuals)
 
 ### Print table with individuals and families ###
 
@@ -147,108 +185,130 @@ convert_month = {
 }
 
 ## individuals table
-itable = PrettyTable()
-itable.title = "Individuals"
-itable.field_names = ["ID","Name","Gender","Birthday","Age","Alive","Death","Child","Spouse"]
+def createIndividualsTable():
+    itable = PrettyTable()
+    itable.title = "Individuals"
+    itable.field_names = ["ID","Name","Gender","Birthday","Age","Alive","Death","Child","Spouse"]
 
-for i in individuals:
-    try:
-        to_add = []
-        info = individuals[i]
+    for i in individuals:
+        try:
+            to_add = []
+            info = individuals[i]
 
-        ## Add info field by field
-        to_add.append(i[1:-1]) # remove @ signs on beginning and end
-        to_add.append(info['NAME'])
-        to_add.append(info['SEX'])
-        # convert birthdate to date object
-        bd = info['DATE'].split()
-        bd = date(int(bd[2]), convert_month[bd[1]], int(bd[0]))
-        to_add.append(bd.isoformat())
-        # compute age
-        today = date.today()
-        age = today.year - bd.year -((today.month, today.day) < (bd.month, bd.day))
-        to_add.append(age)
-        if('DEAT' in info and info['DEAT'] != 'N'):
-            to_add.append("False")
-            dd = info['DEAT'].split()
-            dd = date(int(dd[2]), convert_month[dd[1]], int(dd[0]))
-            to_add.append(dd.isoformat())
-        else:
-            to_add.append("True")
-            to_add.append("NA")
+            ## Add info field by field
+            to_add.append(i[1:-1]) # remove @ signs on beginning and end
+            to_add.append(info['NAME'])
+            to_add.append(info['SEX'])
+            # convert birthdate to date object
+            bd = info['DATE'].split()
+            bd = date(int(bd[2]), convert_month[bd[1]], int(bd[0]))
+            to_add.append(bd.isoformat())
+            # compute age
+            today = date.today()
+            age = today.year - bd.year -((today.month, today.day) < (bd.month, bd.day))
+            to_add.append(age)
+            if('DEAT' in info and info['DEAT'] != 'N'):
+                to_add.append("False")
+                dd = info['DEAT'].split()
+                dd = date(int(dd[2]), convert_month[dd[1]], int(dd[0]))
+                to_add.append(dd.isoformat())
+            else:
+                to_add.append("True")
+                to_add.append("NA")
 
-        if('FAMC' in info):
-            temp = []
-            for j in info['FAMC'].split(' '):
-                temp.append(j[1:-1]) # remove @ signs on beginning and end
-            to_add.append(temp)
-        else:
-            to_add.append("NA")
+            if('FAMC' in info):
+                temp = []
+                for j in info['FAMC'].split(' '):
+                    temp.append(j[1:-1]) # remove @ signs on beginning and end
+                to_add.append(temp)
+            else:
+                to_add.append("NA")
 
-        if('FAMS' in info):
-            temp = []
-            for j in info['FAMS']:
-                temp.append(j[1:-1]) # remove @ signs on beginning and end
-            to_add.append(temp)
-        else:
-            to_add.append("NA")    
-        
-        itable.add_row(to_add)
-    except Exception:
-        print("Error with individual " + i)
-        print("Info: ", individuals[i])
-        traceback.print_exc()
-        print()
+            if('FAMS' in info):
+                temp = []
+                for j in info['FAMS']:
+                    temp.append(j[1:-1]) # remove @ signs on beginning and end
+                to_add.append(temp)
+            else:
+                to_add.append("NA")    
+            
+            itable.add_row(to_add)
+        except Exception:
+            print("Error with individual " + i)
+            print("Info: ", individuals[i])
+            traceback.print_exc()
+            print()
+
+    return itable
 
 ## families table
-ftable = PrettyTable()
-ftable.title = "Families"
-ftable.field_names = ["ID","Married","Divorced","Husband ID","Husband Name","Wife ID","Wife Name","Children"]
+def createFamiliesTable():
+    ftable = PrettyTable()
+    ftable.title = "Families"
+    ftable.field_names = ["ID","Married","Divorced","Husband ID","Husband Name","Wife ID","Wife Name","Children"]
 
-for i in families:
-    try:
-        to_add = []
-        info = families[i]
+    for i in families:
+        try:
+            to_add = []
+            info = families[i]
 
-        ## Add info field by field
-        to_add.append(i[1:-1]) # remove @ signs on beginning and end
+            ## Add info field by field
+            to_add.append(i[1:-1]) # remove @ signs on beginning and end
 
-        # format marriage date
-        md = info['DATE'].split()
-        md = date(int(md[2]), convert_month[md[1]], int(md[0]))
-        to_add.append(md.isoformat())
+            # format marriage date
+            md = info['DATE'].split()
+            md = date(int(md[2]), convert_month[md[1]], int(md[0]))
+            to_add.append(md.isoformat())
 
-        if('DIV' in info and info['DIV'] != 'N'):
-            dd = info['DIV'].split()
-            dd = date(int(dd[2]), convert_month[dd[1]], int(dd[0]))
-            to_add.append(dd.isoformat())
-        else:
-            to_add.append("NA")
-        
-        to_add.append(info['HUSB'][1:-1]) # remove @ signs on beginning and end
-        # get husband name
-        to_add.append(individuals[info['HUSB']]['NAME'])
+            if('DIV' in info and info['DIV'] != 'N'):
+                dd = info['DIV'].split()
+                dd = date(int(dd[2]), convert_month[dd[1]], int(dd[0]))
+                to_add.append(dd.isoformat())
+            else:
+                to_add.append("NA")
+            
+            to_add.append(info['HUSB'][1:-1]) # remove @ signs on beginning and end
+            # get husband name
+            to_add.append(individuals[info['HUSB']]['NAME'])
 
-        to_add.append(info['WIFE'][1:-1]) # remove @ signs on beginning and end
-        # get wife name
-        to_add.append(individuals[info['WIFE']]['NAME'])
+            to_add.append(info['WIFE'][1:-1]) # remove @ signs on beginning and end
+            # get wife name
+            to_add.append(individuals[info['WIFE']]['NAME'])
 
-        if('CHIL' in info and info['CHIL'].strip() != ''):
-            temp = []
-            for j in info['CHIL'].split(' '):
-                temp.append(j[1:-1]) # remove @ signs on beginning and end
-            to_add.append(temp)
-        else:
-            to_add.append("NA")
-         
-        
-        ftable.add_row(to_add)
-    except Exception:
-        print("Error with family " + i)
-        print("Info: ", families[i])
-        traceback.print_exc()
-        print()
+            if('CHIL' in info and info['CHIL'].strip() != ''):
+                temp = []
+                for j in info['CHIL'].split(' '):
+                    temp.append(j[1:-1]) # remove @ signs on beginning and end
+                to_add.append(temp)
+            else:
+                to_add.append("NA")
+            
+            
+            ftable.add_row(to_add)
+        except Exception:
+            print("Error with family " + i)
+            print("Info: ", families[i])
+            traceback.print_exc()
+            print()
+    return ftable
 
-print(itable)
-print(ftable)
+individualsTable = createIndividualsTable()
+familiesTable = createFamiliesTable()
+
+## gets all deceased family members
+def getDeceased():
+    deceased = []
+    for row in individualsTable:
+        if (row.get_string(fields=["Alive"]).find('False')) != -1:
+            val = (row.get_string(fields=["Name"])).strip()
+            val="".join(c for c in val if c.isalnum())
+            deceased.append(val[15:])
+    return deceased
+
+    
+
+print(individualsTable)
+print(familiesTable)
+deceased = getDeceased()
+print(deceased)
 
