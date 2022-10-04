@@ -329,13 +329,48 @@ def deathBeforeBirthErrors(individuals):
             if death < birth:
                 errors.append(f"Error: Individual {i} has a birth date after their death date")
     return errors
- 
+
+## US01	Dates before current date
+# Dates (birth, marriage, divorce, death) should not be after the current date
+def datesBeforeCurrentDateErrors(individuals, families):
+    errors = []
+    today = datetime.today()
+    for i in individuals:
+        birth = (datetime.strptime(individuals[i]["DATE"], "%d %b %Y"))
+        if (today < birth):
+            errors.append(f"Error: Individual {i} has a birth date after current date")
+        if "DEAT" in individuals[i]:
+            death = (datetime.strptime(individuals[i]["DEAT"], "%d %b %Y"))
+            if (today < death):
+                errors.append(f"Error: Individual {i} has a death date after current date")
+
+    for f in families:
+        marriage = (datetime.strptime(families[f]["DATE"], "%d %b %Y"))
+        if (today < marriage):
+            errors.append(f"Error: Family {f} has a marriage date after current date")
+        if "DIV" in families[f]:
+            divorce = (datetime.strptime(families[f]["DIV"], "%d %b %Y"))
+            if (today < divorce):
+                errors.append(f"Error: Family {f} has a divorce date after current date")
+        
+
+## US04	Marriage before divorce
+# Marriage should occur before divorce of spouses, and divorce can only occur after marriage
+def marriageBeforeDivorceErrors(families):
+    errors = []
+    for f in families:
+        if "DIV" in families[f]:
+            marr = (datetime.strptime(families[f]["DATE"], "%d %b %Y"))
+            div  = (datetime.strptime(families[f]["DIV"], "%d %b %Y"))
+            if div < marr:
+                errors.append(f"Error: Family {f} has a divorce date before their marriage date")
+    return errors
 
 ## find errors
 def findErrors(individuals, families):
     errors = []
-    errors+=marriageBeforeBirthErrors(individuals, families)
-    errors+=deathBeforeBirthErrors(individuals)
+    errors += marriageBeforeBirthErrors(individuals, families)
+    errors += deathBeforeBirthErrors(individuals)
     return errors
 
 ## main
