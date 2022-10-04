@@ -352,6 +352,7 @@ def datesBeforeCurrentDateErrors(individuals, families):
             divorce = (datetime.strptime(families[f]["DIV"], "%d %b %Y"))
             if (today < divorce):
                 errors.append(f"Error: Family {f} has a divorce date after current date")
+    return errors
         
 
 ## US04	Marriage before divorce
@@ -371,6 +372,8 @@ def findErrors(individuals, families):
     errors = []
     errors += marriageBeforeBirthErrors(individuals, families)
     errors += deathBeforeBirthErrors(individuals)
+    errors += datesBeforeCurrentDateErrors(individuals, families)
+    errors += marriageBeforeDivorceErrors(families)
     return errors
 
 ## main
@@ -397,6 +400,10 @@ if __name__ == "__main__":
     #
     marriagesb4birth = marriageBeforeBirthErrors(individuals, families)
     deathsb4birth = deathBeforeBirthErrors(individuals)
+
+    #
+    datesb4currdate = datesBeforeCurrentDateErrors(individuals, families)
+    marriagesb4divorce = marriageBeforeDivorceErrors(families)
     
     #output for sprint turn in
     output = open("sprint1results.txt", "w")
@@ -406,8 +413,8 @@ if __name__ == "__main__":
     output.write('\n US23: ' + "All persons names and birthdates are unique")
     output.write('\n US02: marriages before birth: ' + str(marriagesb4birth))
     output.write('\n US03: deaths before birth: ' + str(deathsb4birth))
-
-
+    output.write('\n US01: marriages before birth: ' + str(datesb4currdate))
+    output.write('\n US04: deaths before birth: ' + str(marriagesb4divorce))
 
     # check for errors
 
