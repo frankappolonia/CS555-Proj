@@ -413,8 +413,8 @@ if __name__ == "__main__":
     output.write('\n US23: ' + "All persons names and birthdates are unique")
     output.write('\n US02: marriages before birth: ' + str(marriagesb4birth))
     output.write('\n US03: deaths before birth: ' + str(deathsb4birth))
-    output.write('\n US01: marriages before birth: ' + str(datesb4currdate))
-    output.write('\n US04: deaths before birth: ' + str(marriagesb4divorce))
+    output.write('\n US01: dates before current date: ' + str(datesb4currdate))
+    output.write('\n US04: marriages before divorce ' + str(marriagesb4divorce))
 
     # check for errors
 

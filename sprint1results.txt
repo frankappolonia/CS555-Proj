@@ -26,3 +26,5 @@
  US23: All persons names and birthdates are unique
  US02: marriages before birth: []
  US03: deaths before birth: []
+ US01: dates before current date: []
+ US04: marriages before divorce []
