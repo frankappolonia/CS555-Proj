@@ -361,7 +361,7 @@ if __name__ == "__main__":
     
     # check for errors
     errors = findErrors(individuals, families)
-    print("\nErrorrs:" + (" None" if errors == [] else ""))
+    print("\nErrors:" + (" None" if errors == [] else ""))
     for error in errors:
         print(f" - {error}")
 
