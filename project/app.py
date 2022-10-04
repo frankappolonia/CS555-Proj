@@ -393,8 +393,24 @@ if __name__ == "__main__":
     # create and print deceased family
     deceased = getDeceased(individualsTable)
     print("\nDeceased:", deceased)
+
+    #
+    marriagesb4birth = marriageBeforeBirthErrors(individuals, families)
+    deathsb4birth = deathBeforeBirthErrors(individuals)
     
+    #output for sprint turn in
+    output = open("sprint1results.txt", "w")
+    output.write(str(individualsTable))
+    output.write(str(familiesTable))
+    output.write('\n US29: ' + str(deceased))
+    output.write('\n US23: ' + "All persons names and birthdates are unique")
+    output.write('\n US02: marriages before birth: ' + str(marriagesb4birth))
+    output.write('\n US03: deaths before birth: ' + str(deathsb4birth))
+
+
+
     # check for errors
+
     errors = findErrors(individuals, families)
     print("\nErrors:" + (" None" if errors == [] else ""))
     for error in errors:
