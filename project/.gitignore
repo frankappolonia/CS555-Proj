@@ -1,3 +1,4 @@
+<<<<<<< Updated upstream
 # Virtualenv
 # http://iamzed.com/2009/05/07/a-primer-on-virtualenv/
 .Python
@@ -17,3 +18,21 @@ pip-selfcheck.json
 sprint1test.py
 sprint1test.py
 
+=======
+# Virtualenv
+# http://iamzed.com/2009/05/07/a-primer-on-virtualenv/
+.Python
+[Bb]in
+[Ii]nclude
+[Ll]ib
+[Ll]ib64
+[Ll]ocal
+[Ss]cripts
+pyvenv.cfg
+.venv
+.env
+..env
+/venv
+/env
+pip-selfcheck.json
+>>>>>>> Stashed changes
