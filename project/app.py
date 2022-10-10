@@ -6,11 +6,14 @@ from datetime import date
 from datetime import datetime
 import traceback
 
+
 # GLOBALS
 working_directory = os.getcwd()
 
-input_file = working_directory + "/myFamily.ged"
-output_file = working_directory + "/output.txt"
+#input_file = working_directory + "/myFamily.ged"
+#output_file = working_directory + "/output.txt"
+input_file = working_directory + "./myFamily.ged"
+output_file = working_directory + "./output.txt"
 #input_file = working_directory + "/../myFamily.ged"
 #output_file = working_directory + "/../output.txt"
 
@@ -291,7 +294,7 @@ def createFamiliesTable(families):
     return ftable
 
 
-## gets all deceased family members
+## US29 - gets all deceased family members
 def getDeceased(individualsTable):
     deceased = []
     for row in individualsTable:
@@ -302,7 +305,7 @@ def getDeceased(individualsTable):
     return deceased
 
 
-## find marriage before birth errors
+## US02 - find marriage before birth errors
 def marriageBeforeBirthErrors(individuals, families):
     errors = []
     for f in families:
@@ -319,7 +322,7 @@ def marriageBeforeBirthErrors(individuals, families):
     return errors
 
 
-## find death before birth errors
+## US03 - find death before birth errors
 def deathBeforeBirthErrors(individuals):
     errors = []
     for i in individuals:
@@ -367,7 +370,7 @@ def marriageBeforeDivorceErrors(families):
                 errors.append(f"Error: Family {f} has a divorce date before their marriage date")
     return errors
 
-## find death before marriage errors
+## US05 - find death before marriage errors
 def deathBeforeMarriageErrors(individuals, families):
     errors = []
     for f in families:
@@ -386,7 +389,7 @@ def deathBeforeMarriageErrors(individuals, families):
     return errors
 
 
-## find death before divorce errors
+## US06 - find death before divorce errors
 def deathBeforeDivorceErrors(individuals, families):
     errors = []
     for f in families:
@@ -404,6 +407,38 @@ def deathBeforeDivorceErrors(individuals, families):
                         h_id = families[f]["WIFE"]
                         errors.append(f"Error: Wife {h_id} of family {f} has a death date before their divorce date")
     return errors
+
+
+#US10
+def marriageAfter14(individuals, families):
+    
+    format = '%d %b %Y'
+    invalidMarriages = []
+
+    for fam in families:
+        marriageDate = int(str(datetime.strptime(families[fam]['DATE'], format))[:4])
+        husbandBirth = int(str(datetime.strptime(individuals[families[fam]['HUSB']]['DATE'], format))[:4])
+        wifeBirth = int(str(datetime.strptime(individuals[families[fam]['WIFE']]['DATE'], format))[:4])
+
+        if marriageDate-wifeBirth < 14 or marriageDate-husbandBirth < 14:
+            invalidMarriages.append(fam)
+    return invalidMarriages
+
+#US07
+def ageLessThan150(individuals):
+    invalidPeople = []
+    for p in individuals:
+        person = individuals[p]
+
+        bd = person['DATE'].split()
+        bd = date(int(bd[2]), convert_month[bd[1]], int(bd[0]))
+         # compute age
+        today = date.today()
+        age = today.year - bd.year -((today.month, today.day) < (bd.month, bd.day))
+
+        if age > 150:
+            invalidPeople.append(p)
+    return invalidPeople
 
 
 ## find errors
@@ -426,8 +461,10 @@ if __name__ == "__main__":
     storedData = storeInDataStructures()
     individuals, families = storedData
 
-    print(storedData)
-
+    '''
+    SPRINT 1
+    -------------------------------------------------------
+    '''
     # create data table
     individualsTable = createIndividualsTable(individuals)
     familiesTable = createFamiliesTable(families)
@@ -436,28 +473,57 @@ if __name__ == "__main__":
     print(individualsTable)
     print(familiesTable)
 
-    # create and print deceased family
+    #US29
     deceased = getDeceased(individualsTable)
     print("\nDeceased:", deceased)
 
-    #
+    #US02
     marriagesb4birth = marriageBeforeBirthErrors(individuals, families)
+    #US03
     deathsb4birth = deathBeforeBirthErrors(individuals)
 
-    #
+    #US01
     datesb4currdate = datesBeforeCurrentDateErrors(individuals, families)
+    #US04
     marriagesb4divorce = marriageBeforeDivorceErrors(families)
     
+    '''
+    SPRINT 2
+    -------------------------------------------------------
+    '''
+    #US05
+    deathsb4marriage = deathBeforeMarriageErrors(individuals, families)
+    #US06
+    deathsb4Divorce = deathBeforeDivorceErrors(individuals, families)
+
+    #US10
+    invalidMarriages = marriageAfter14(individuals, families)
+    #US07
+    invalidAges = ageLessThan150(individuals)
+
+    #US08
+
+    #US09
+
+    
+    '''
+    File output for sprint turn in
+    -------------------------------------------------------
+    '''
     # output for sprint turn in
     # output = open("sprint1results.txt", "w")
     # output.write(str(individualsTable))
     # output.write(str(familiesTable))
+
+    ##Sprint 1
     # output.write('\n US29: ' + str(deceased))
     # output.write('\n US23: ' + "All persons names and birthdates are unique")
     # output.write('\n US02: marriages before birth: ' + str(marriagesb4birth))
     # output.write('\n US03: deaths before birth: ' + str(deathsb4birth))
     # output.write('\n US01: dates before current date: ' + str(datesb4currdate))
     # output.write('\n US04: marriages before divorce ' + str(marriagesb4divorce))
+
+    ##Sprint 2
 
     # check for errors
 
