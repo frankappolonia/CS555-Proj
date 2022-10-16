@@ -36,6 +36,36 @@ class SprintTests(unittest.TestCase):
         self.assertTrue("I2" in e[1])
         self.f1["@F1@"]["DIV"] = "26 JUL 2004"
 
-  
+    
+    def test5_sprint2(self):
+        #US07
+        import os
+        working_directory = os.getcwd()
+        input_file = working_directory + "./myFamily.ged"
+        output_file = working_directory + "./output.txt"
+        parseData()
+        storedData = storeInDataStructures()
+        individuals, families = storedData
+
+        # create data table
+        individualsTable = createIndividualsTable(individuals)
+
+        data = ageLessThan150(individuals)
+        self.assertEqual(data, [])
+
+    def test6_sprint2(self):
+        #US10
+        import os
+        working_directory = os.getcwd()
+        input_file = working_directory + "./myFamily.ged"
+        output_file = working_directory + "./output.txt"
+        parseData()
+        storedData = storeInDataStructures()
+        individuals, families = storedData
+    
+
+        data = marriageAfter14(individuals, families)
+
+        self.assertEqual(data, [])
 if __name__ == '__main__':
     unittest.main()
