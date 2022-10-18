@@ -538,7 +538,7 @@ if __name__ == "__main__":
     #US05
     deathsb4marriage = deathBeforeMarriageErrors(individuals, families)
     #US06
-    deathsb4Divorce = deathBeforeDivorceErrors(individuals, families)
+    deathsb4divorce = deathBeforeDivorceErrors(individuals, families)
 
     #US10
     invalidMarriages = marriageAfter14(individuals, families)
@@ -555,9 +555,9 @@ if __name__ == "__main__":
     -------------------------------------------------------
     '''
     # output for sprint turn in
-    # output = open("sprint1results.txt", "w")
-    # output.write(str(individualsTable))
-    # output.write(str(familiesTable))
+    output = open("sprint2results.txt", "w")
+    output.write(str(individualsTable))
+    output.write(str(familiesTable))
 
     ##Sprint 1
     # output.write('\n US29: ' + str(deceased))
@@ -568,6 +568,15 @@ if __name__ == "__main__":
     # output.write('\n US04: marriages before divorce ' + str(marriagesb4divorce))
 
     ##Sprint 2
+
+    output.write('\n US05: deaths before marriages ' + str(deathsb4marriage))
+    output.write('\n US06: deaths before divorces ' + str(deathsb4divorce))
+    output.write('\n US10: marriages before 14: ' + str(invalidMarriages))
+    output.write('\n US07: ages > 150: ' + str(invalidAges))
+    output.write('\n US08: births before parents marriage ' + str(birthsb4parentmarriage))
+    output.write('\n US09: births after parents death ' + str(birthsafterparentdeaths))
+
+    output.close()
 
     # check for errors
 

@@ -67,5 +67,15 @@ class SprintTests(unittest.TestCase):
         data = marriageAfter14(individuals, families)
 
         self.assertEqual(data, [])
+
+    def test7_sprint2(self):
+        e = birthBeforeMarriageOfParents(self.i1, self.f1)
+        self.assertEqual(e, [])
+
+    def test8_sprint2(self):
+        e = birthAfterDeathOfParents(self.i1, self.f1)
+        self.assertEqual(e, [])
+
+    
 if __name__ == '__main__':
     unittest.main()
