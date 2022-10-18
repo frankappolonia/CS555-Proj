@@ -344,7 +344,7 @@
 --> 1 FAMC @F4@
 <-- 1|FAMC|Y|@F4@
 
---> 0 @F1@ FAM
+--> 0 @F1@ FAM 
 <-- 0|FAM|Y|@F1@
 --> 1 HUSB @I1@
 <-- 1|HUSB|Y|@I1@
@@ -407,8 +407,8 @@
 --> 1 HUSB @I5@
 <-- 1|HUSB|Y|@I5@
 
---> 1 WIFE @I4@
-<-- 1|WIFE|Y|@I4@
+--> 1 WIFE @I3@
+<-- 1|WIFE|Y|@I3@
 
 --> 1 CHIL @I2@
 <-- 1|CHIL|Y|@I2@

@@ -2,8 +2,8 @@ import os
 from pprint import pprint
 from tkinter.font import families
 from prettytable import PrettyTable
-from datetime import date
-from datetime import datetime
+from datetime import date, datetime
+from dateutil.relativedelta import relativedelta
 import traceback
 
 
@@ -440,6 +440,48 @@ def ageLessThan150(individuals):
             invalidPeople.append(p)
     return invalidPeople
 
+#US08
+def birthBeforeMarriageOfParents(individuals, families):
+    errors = []
+    for f in families:
+        if not ('CHIL' in families[f] and len(families[f]['CHIL']) > 0):
+            continue
+        marr = (datetime.strptime(families[f]["DATE"], "%d %b %Y"))
+        if "DIV" in families[f]:
+            div = (datetime.strptime(families[f]["DIV"], "%d %b %Y")) + relativedelta(months=9)
+#        for c in families[f]['CHIL']: uncomment once parsing fixed
+            c = families[f]['CHIL'] # delete once parsing fixed
+            birth = (datetime.strptime(individuals[c]["DATE"], "%d %b %Y"))
+            if birth < marr:
+                errors.append(f"Error: Individual {c} of family {f} has a birth date before parents' marriage date")
+            if birth > div:
+                errors.append(f"Error: Individual {c} of family {f} has a birth date more than nine months after parents' divorce date")
+    return errors   
+            
+            
+        
+        
+
+#US09
+def birthAfterDeathOfParents(individuals, families):
+    errors = []
+    for f in families:
+        if not ('CHIL' in families[f] and len(families[f]['CHIL']) > 0):
+            continue
+        d_husb, d_wife = [datetime(9999, 1, 1)]*2 # default values for when no death exists
+        if "DEAT" in individuals[families[f]['HUSB']]:
+            d_husb = (datetime.strptime(individuals[families[f]["HUSB"]]["DEAT"], "%d %b %Y")) + relativedelta(months=9)
+        if "DEAT" in individuals[families[f]['WIFE']]:
+            d_wife = (datetime.strptime(individuals[families[f]["WIFE"]]["DEAT"], "%d %b %Y"))        
+#        for c in families[f]['CHIL']: uncomment once parsing fixed
+            c = families[f]['CHIL'] # delete once parsing fixed
+            birth = (datetime.strptime(individuals[c]["DATE"], "%d %b %Y"))
+            if birth > d_husb:
+                errors.append(f"Error: Individual {c} of family {f} has a birth date more than nine months after father's death")
+            if birth > d_wife:
+                errors.append(f"Error: Individual {c} of family {f} has a birth date after mother's death")
+    return errors   
+
 
 ## find errors
 def findErrors(individuals, families):
@@ -450,6 +492,8 @@ def findErrors(individuals, families):
     errors += marriageBeforeDivorceErrors(families)
     errors += deathBeforeMarriageErrors(individuals, families)
     errors += deathBeforeDivorceErrors(individuals, families)
+    errors += birthBeforeMarriageOfParents(individuals, families)
+    errors += birthAfterDeathOfParents(individuals, families)
     return errors
 
 ## main
@@ -502,9 +546,9 @@ if __name__ == "__main__":
     invalidAges = ageLessThan150(individuals)
 
     #US08
-
+    birthsb4parentmarriage = birthBeforeMarriageOfParents(individuals, families)
     #US09
-
+    birthsafterparentdeaths = birthAfterDeathOfParents(individuals, families)
     
     '''
     File output for sprint turn in
