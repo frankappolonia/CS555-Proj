@@ -1,8 +1,9 @@
+from json.encoder import INFINITY
 import os
 from pprint import pprint
 from tkinter.font import families
 from prettytable import PrettyTable
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 from dateutil.relativedelta import relativedelta
 import traceback
 
@@ -184,8 +185,6 @@ def storeInDataStructures():
 
     except Exception as e:
             print(e)
-
-    print(families)
     
     return individuals, families
 
@@ -455,12 +454,13 @@ def birthBeforeMarriageOfParents(individuals, families):
         if "DIV" in families[f]:
             div = (datetime.strptime(families[f]["DIV"], "%d %b %Y")) + relativedelta(months=9)
         for c in families[f]['CHIL']: 
-            c = families[f]['CHIL'] # delete once parsing fixed
             birth = (datetime.strptime(individuals[c]["DATE"], "%d %b %Y"))
             if birth < marr:
                 errors.append(f"Error: Individual {c} of family {f} has a birth date before parents' marriage date")
-            if birth > div:
-                errors.append(f"Error: Individual {c} of family {f} has a birth date more than nine months after parents' divorce date")
+            if "DIV" in families[f]:
+                div = (datetime.strptime(families[f]["DIV"], "%d %b %Y")) + relativedelta(months=9)
+                if birth > div:
+                    errors.append(f"Error: Individual {c} of family {f} has a birth date more than nine months after parents' divorce date")
     return errors   
             
 
@@ -476,7 +476,6 @@ def birthAfterDeathOfParents(individuals, families):
         if "DEAT" in individuals[families[f]['WIFE']]:
             d_wife = (datetime.strptime(individuals[families[f]["WIFE"]]["DEAT"], "%d %b %Y"))        
         for c in families[f]['CHIL']:
-            c = families[f]['CHIL'] # delete once parsing fixed
             birth = (datetime.strptime(individuals[c]["DATE"], "%d %b %Y"))
             if birth > d_husb:
                 errors.append(f"Error: Individual {c} of family {f} has a birth date more than nine months after father's death")
@@ -484,6 +483,30 @@ def birthAfterDeathOfParents(individuals, families):
                 errors.append(f"Error: Individual {c} of family {f} has a birth date after mother's death")
     return errors   
 
+# US13 - Siblings spacing
+def siblingSpacingErrors(individuals, families):
+    errors = []
+    t1 = timedelta(days=2)
+    t2 = timedelta(days=270)
+    for fam in families:
+        if(families[fam]['CHIL']):
+            children = families[fam]['CHIL']
+            for child in children:
+                dates.append(datetime.strptime(individuals[child]["DATE"], "%d %b %Y"))
+            while len(dates) > 1:
+                for i in range(1, len(dates)):
+                    d = abs(dates[i]-dates[0])
+                    if(d > t1 and d < t2):
+                        errors.append(f"Error: children in family {fam} are not spaced apart sufficiently")
+                        break
+                dates = dates[1:]
+    return errors
+
+# US14 - Multiple births <= 5
+def multipleBirthsErrors(individuals, families):
+    errors = []
+    
+    return errors
 
 ## find errors
 def findErrors(individuals, families):
@@ -496,6 +519,8 @@ def findErrors(individuals, families):
     errors += deathBeforeDivorceErrors(individuals, families)
     errors += birthBeforeMarriageOfParents(individuals, families)
     errors += birthAfterDeathOfParents(individuals, families)
+    errors += siblingSpacingErrors(individuals, families)
+    errors += multipleBirthsErrors(individuals, families)
     return errors
 
 ## main
@@ -507,10 +532,6 @@ if __name__ == "__main__":
     storedData = storeInDataStructures()
     individuals, families = storedData
 
-    '''
-    SPRINT 1
-    -------------------------------------------------------
-    '''
     # create data table
     individualsTable = createIndividualsTable(individuals)
     familiesTable = createFamiliesTable(families)
@@ -519,6 +540,16 @@ if __name__ == "__main__":
     print(individualsTable)
     print(familiesTable)
 
+    # check for errors
+    errors = findErrors(individuals, families)
+    print("\nErrors:" + (" None" if errors == [] else ""))
+    for error in errors:
+        print(f" - {error}")
+    print()
+
+    '''
+    SPRINT 1
+    -------------------------------------------------------
     #US29
     deceased = getDeceased(individualsTable)
     print("\nDeceased:", deceased)
@@ -532,11 +563,11 @@ if __name__ == "__main__":
     datesb4currdate = datesBeforeCurrentDateErrors(individuals, families)
     #US04
     marriagesb4divorce = marriageBeforeDivorceErrors(families)
-    
+    '''
+
     '''
     SPRINT 2
     -------------------------------------------------------
-    '''
     #US05
     deathsb4marriage = deathBeforeMarriageErrors(individuals, families)
     #US06
@@ -551,39 +582,40 @@ if __name__ == "__main__":
     birthsb4parentmarriage = birthBeforeMarriageOfParents(individuals, families)
     #US09
     birthsafterparentdeaths = birthAfterDeathOfParents(individuals, families)
-    
+    '''
+
     '''
     File output for sprint turn in
     -------------------------------------------------------
     '''
     # output for sprint turn in
-    output = open("sprint2results.txt", "w")
+    output = open("sprint3results.txt", "w")
     output.write(str(individualsTable))
     output.write(str(familiesTable))
 
-    ##Sprint 1
-    # output.write('\n US29: ' + str(deceased))
-    # output.write('\n US23: ' + "All persons names and birthdates are unique")
-    # output.write('\n US02: marriages before birth: ' + str(marriagesb4birth))
-    # output.write('\n US03: deaths before birth: ' + str(deathsb4birth))
-    # output.write('\n US01: dates before current date: ' + str(datesb4currdate))
-    # output.write('\n US04: marriages before divorce ' + str(marriagesb4divorce))
+    '''
+    #Sprint 1
+    output.write('\n US29: ' + str(deceased))
+    output.write('\n US23: ' + "All persons names and birthdates are unique")
+    output.write('\n US02: marriages before birth: ' + str(marriagesb4birth))
+    output.write('\n US03: deaths before birth: ' + str(deathsb4birth))
+    output.write('\n US01: dates before current date: ' + str(datesb4currdate))
+    output.write('\n US04: marriages before divorce ' + str(marriagesb4divorce))
+    '''
 
-    ##Sprint 2
-
+    '''
+    #Sprint 2
     output.write('\n US05: deaths before marriages ' + str(deathsb4marriage))
     output.write('\n US06: deaths before divorces ' + str(deathsb4divorce))
     output.write('\n US10: marriages before 14: ' + str(invalidMarriages))
     output.write('\n US07: ages > 150: ' + str(invalidAges))
     output.write('\n US08: births before parents marriage ' + str(birthsb4parentmarriage))
     output.write('\n US09: births after parents death ' + str(birthsafterparentdeaths))
+    '''
 
     output.close()
 
-    # check for errors
 
-    errors = findErrors(individuals, families)
-    print("\nErrors:" + (" None" if errors == [] else ""))
-    for error in errors:
-        print(f" - {error}")
+
+
 
