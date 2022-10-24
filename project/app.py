@@ -149,14 +149,18 @@ def storeInDataStructures():
                                 curr[prev_line[1]] = fields[3]
                             if fields[1] == "FAMS":
                                 curr[fields[1]].append(fields[3])
+                            if fields[1] == 'CHIL':
+                                curr[fields[1]].append(fields[3])
                         elif fields[1] == "FAMS":
+                            curr[fields[1]] = [fields[3]]
+                        elif fields[1] == 'CHIL':
                             curr[fields[1]] = [fields[3]]
                         else:
                             curr[fields[1]] = fields[3]
 
                     prev_line = fields
-            except Exception:
-                print(Exception)
+            except Exception as e:
+                print(e)
 
     # Add in the last added info
     try:          
@@ -178,8 +182,10 @@ def storeInDataStructures():
                 curr_name = ""
                 parsing_indi = False
 
-    except Exception:
-            print(Exception)
+    except Exception as e:
+            print(e)
+
+    print(families)
     
     return individuals, families
 
@@ -276,15 +282,14 @@ def createFamiliesTable(families):
             # get wife name
             to_add.append(individuals[info['WIFE']]['NAME'])
 
-            if('CHIL' in info and info['CHIL'].strip() != ''):
+            if('CHIL' in info):
                 temp = []
-                for j in info['CHIL'].split(' '):
+                for j in info['CHIL']:
                     temp.append(j[1:-1]) # remove @ signs on beginning and end
                 to_add.append(temp)
             else:
-                to_add.append("NA")
-            
-            
+                to_add.append("NA")  
+                        
             ftable.add_row(to_add)
         except Exception:
             print("Error with family " + i)
@@ -449,7 +454,7 @@ def birthBeforeMarriageOfParents(individuals, families):
         marr = (datetime.strptime(families[f]["DATE"], "%d %b %Y"))
         if "DIV" in families[f]:
             div = (datetime.strptime(families[f]["DIV"], "%d %b %Y")) + relativedelta(months=9)
-#        for c in families[f]['CHIL']: uncomment once parsing fixed
+        for c in families[f]['CHIL']: 
             c = families[f]['CHIL'] # delete once parsing fixed
             birth = (datetime.strptime(individuals[c]["DATE"], "%d %b %Y"))
             if birth < marr:
@@ -458,9 +463,6 @@ def birthBeforeMarriageOfParents(individuals, families):
                 errors.append(f"Error: Individual {c} of family {f} has a birth date more than nine months after parents' divorce date")
     return errors   
             
-            
-        
-        
 
 #US09
 def birthAfterDeathOfParents(individuals, families):
@@ -473,7 +475,7 @@ def birthAfterDeathOfParents(individuals, families):
             d_husb = (datetime.strptime(individuals[families[f]["HUSB"]]["DEAT"], "%d %b %Y")) + relativedelta(months=9)
         if "DEAT" in individuals[families[f]['WIFE']]:
             d_wife = (datetime.strptime(individuals[families[f]["WIFE"]]["DEAT"], "%d %b %Y"))        
-#        for c in families[f]['CHIL']: uncomment once parsing fixed
+        for c in families[f]['CHIL']:
             c = families[f]['CHIL'] # delete once parsing fixed
             birth = (datetime.strptime(individuals[c]["DATE"], "%d %b %Y"))
             if birth > d_husb:
