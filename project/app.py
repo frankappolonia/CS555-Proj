@@ -491,6 +491,7 @@ def siblingSpacingErrors(individuals, families):
     for fam in families:
         if(families[fam]['CHIL']):
             children = families[fam]['CHIL']
+            dates = []
             for child in children:
                 dates.append(datetime.strptime(individuals[child]["DATE"], "%d %b %Y"))
             while len(dates) > 1:
@@ -505,7 +506,24 @@ def siblingSpacingErrors(individuals, families):
 # US14 - Multiple births <= 5
 def multipleBirthsErrors(individuals, families):
     errors = []
-    
+    t1 = timedelta(days=2)
+    for fam in families:
+        if(families[fam]['CHIL']):
+            children = families[fam]['CHIL']
+            dates = []
+            for child in children:
+                dates.append(datetime.strptime(individuals[child]["DATE"], "%d %b %Y"))
+            dates.sort()
+            num = 1
+            for i in range(1, len(dates)):
+                d = abs(dates[i]-dates[i-1])
+                if d < t1:
+                    num+=1
+                else:
+                    if num > 5:
+                        errors.append(f"Error: more than 5 children were born at once to family {fam}")
+                        break
+                    num = 1
     return errors
 
 ## find errors
@@ -585,6 +603,16 @@ if __name__ == "__main__":
     '''
 
     '''
+    SPRINT 3
+    -------------------------------------------------------
+    '''
+    #US13
+    sibling_spacing_errors = siblingSpacingErrors(individuals, families)
+    #US14
+    multiple_births_errors = multipleBirthsErrors(individuals, families)
+
+
+    '''
     File output for sprint turn in
     -------------------------------------------------------
     '''
@@ -612,6 +640,10 @@ if __name__ == "__main__":
     output.write('\n US08: births before parents marriage ' + str(birthsb4parentmarriage))
     output.write('\n US09: births after parents death ' + str(birthsafterparentdeaths))
     '''
+
+    #Sprint 3
+    output.write('\n US13: sibling spacing errors: ' + str(sibling_spacing_errors))
+    output.write('\n US14: multiple births errors: ' + str(multiple_births_errors))
 
     output.close()
 

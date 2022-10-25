@@ -9,7 +9,7 @@ class SprintTests(unittest.TestCase):
     }
 
     f1 = {
-        '@F1@': {'HUSB': '@I1@', 'WIFE': '@I2@', 'CHIL': '@I3@', 'DATE': '10 MAR 1990', 'DIV': '26 JUL 2004'}
+        '@F1@': {'HUSB': '@I1@', 'WIFE': '@I2@', 'CHIL': ['@I3@'], 'DATE': '10 MAR 1990', 'DIV': '26 JUL 2004'}
     }
 
     def test1_sprint2(self):
@@ -74,6 +74,14 @@ class SprintTests(unittest.TestCase):
 
     def test8_sprint2(self):
         e = birthAfterDeathOfParents(self.i1, self.f1)
+        self.assertEqual(e, [])
+
+    def test9_sprint3(self):
+        e = siblingSpacingErrors(self.i1, self.f1)
+        self.assertEqual(e, [])
+
+    def test10_sprint3(self):
+        e = multipleBirthsErrors(self.i1, self.f1)
         self.assertEqual(e, [])
 
     

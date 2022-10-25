@@ -23,3 +23,5 @@
 | F3 | 1960-08-09 |    NA    |     I5     |    Frank /Arace/    |    I3   |   Sandra /Arace/  |       ['I2']       |
 | F4 | 1970-05-01 |    NA    |    I10     |   Joseph /Lalori/   |    I7   | Mary /Racconelli/ |      ['I11']       |
 +----+------------+----------+------------+---------------------+---------+-------------------+--------------------+
+ US13: sibling spacing errors: []
+ US14: multiple births errors: []
