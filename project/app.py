@@ -526,6 +526,46 @@ def multipleBirthsErrors(individuals, families):
                     num = 1
     return errors
 
+# US15 - Fewer than 15 siblings
+def fewerThan15Siblings(families):
+    famsWithTooManySiblings = []
+    for fam in families:
+        if len(families[fam]['CHIL']) > 15:
+            famsWithTooManySiblings.append(fam)
+    return famsWithTooManySiblings
+
+# US16 - All male members should have same last name
+def malesLastName(families, individuals):
+    errorFams = []
+    famKeys = {}
+
+    for fam in families:
+        famKeys[fam] = []
+        for key in families[fam]:
+            if key == 'HUSB':
+                famKeys[fam].append(families[fam]['HUSB'])
+                fullName = individuals[families[fam]['HUSB']]['NAME']
+                lastName = fullName[fullName.index("/")+1:]
+            elif key == 'CHIL':
+                for k in families[fam]['CHIL']:
+                    famKeys[fam].append(k)
+
+
+    for fam in famKeys:
+        currLastName = False
+        for key in famKeys[fam]:
+            if individuals[key]['SEX'] != 'M':
+                continue
+            name = individuals[key]['NAME']
+            last = name[name.index("/")+1:]
+            if not currLastName:
+                currLastName = last
+            elif last != currLastName:
+                errorFams.append(fam)
+                break
+    return errorFams
+    
+
 ## find errors
 def findErrors(individuals, families):
     errors = []
@@ -550,6 +590,8 @@ if __name__ == "__main__":
     storedData = storeInDataStructures()
     individuals, families = storedData
 
+    print(individuals)
+    #print(individuals)
     # create data table
     individualsTable = createIndividualsTable(individuals)
     familiesTable = createFamiliesTable(families)
@@ -610,6 +652,10 @@ if __name__ == "__main__":
     sibling_spacing_errors = siblingSpacingErrors(individuals, families)
     #US14
     multiple_births_errors = multipleBirthsErrors(individuals, families)
+    #US15
+    too_many_siblings = fewerThan15Siblings(families)
+    #US16
+    male_last_names = malesLastName(families, individuals)
 
 
     '''
@@ -644,6 +690,9 @@ if __name__ == "__main__":
     #Sprint 3
     output.write('\n US13: sibling spacing errors: ' + str(sibling_spacing_errors))
     output.write('\n US14: multiple births errors: ' + str(multiple_births_errors))
+    output.write('\n US15: fewer than 15 siblings errors: ' + str(too_many_siblings))
+    output.write('\n US16: males with different last name errors: ' + str(male_last_names))
+
 
     output.close()
 
