@@ -36,7 +36,7 @@
 0 @I3@ INDI
 1 NAME
 1 FAMC @F1@
-0 @I4@ INDI
+0 @I3@ INDI
 1 NAME Sandra /Arace/
 2 GIVN Sandra
 2 SURN Arace
@@ -139,7 +139,7 @@
 1 _PRIMARY N
 0 @F3@ FAM
 1 HUSB @I5@
-1 WIFE @I4@
+1 WIFE @I3@
 1 CHIL @I2@
 1 MARR
 2 DATE 9 AUG 1960
