@@ -109,8 +109,8 @@
 --> 1 FAMC @F1@
 <-- 1|FAMC|Y|@F1@
 
---> 0 @I4@ INDI
-<-- 0|INDI|Y|@I4@
+--> 0 @I3@ INDI
+<-- 0|INDI|Y|@I3@
 --> 1 NAME Sandra /Arace/
 <-- 1|NAME|Y|Sandra /Arace/
 

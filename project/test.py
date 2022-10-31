@@ -1,3 +1,4 @@
+from multiprocessing.dummy import Array
 import unittest
 from app import *
 
@@ -83,6 +84,16 @@ class SprintTests(unittest.TestCase):
     def test10_sprint3(self):
         e = multipleBirthsErrors(self.i1, self.f1)
         self.assertEqual(e, [])
+
+    def test11_sprint3(self):
+        #US 15
+        e = fewerThan15Siblings(self.f1)
+        self.assertEqual(isinstance(e, list), True)
+
+    def test12_sprint3(self):
+        #US 16
+        e = malesLastName(self.f1, self.i1)
+        self.assertEqual(isinstance(e, list), True) 
 
     
 if __name__ == '__main__':
