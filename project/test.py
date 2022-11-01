@@ -92,8 +92,19 @@ class SprintTests(unittest.TestCase):
 
     def test12_sprint3(self):
         #US 16
-        e = malesLastName(self.f1, self.i1)
-        self.assertEqual(isinstance(e, list), True) 
+        e = malesLastName(self.i1, self.f1)
+        self.assertEqual(isinstance(e, list), True)
+
+    def test13_sprint3(self):
+        #US 11
+        e = noBigamy(self.f1)
+        self.assertEqual(len(e), 1)
+
+    def test14_sprint3(self):
+        #US 12
+        e = parentsNotTooOld(self.i1, self.f1)
+        self.assertEqual(e, [])
+        
 
     
 if __name__ == '__main__':

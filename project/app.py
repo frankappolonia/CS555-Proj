@@ -535,7 +535,7 @@ def fewerThan15Siblings(families):
     return famsWithTooManySiblings
 
 # US16 - All male members should have same last name
-def malesLastName(families, individuals):
+def malesLastName(individuals, families):
     errorFams = []
     famKeys = {}
 
@@ -564,6 +564,53 @@ def malesLastName(families, individuals):
                 errorFams.append(fam)
                 break
     return errorFams
+
+
+## US11 Marriage should not occur during marriage to another spouse
+def noBigamy(families):
+    errors = []
+    for f in itertools.combinations(families,r=2): #examine pairs of families
+        if families[f[0]]['HUSB'] != families[f[1]]['HUSB'] and families[f[0]]['WIFE'] != families[f[1]]['WIFE']:
+            continue
+        
+        div1, div2 = [datetime(9999, 1, 1)]*2 # default values for when no divorce exists
+        if 'DIV' in families[f[0]]:
+            div1 = (datetime.strptime(families[f[0]]["DIV"], "%d %b %Y"))
+        if 'DIV' in families[f[1]]:
+            div2 = (datetime.strptime(families[f[1]]["DIV"], "%d %b %Y"))
+        marr1 = (datetime.strptime(families[f[0]]["DATE"], "%d %b %Y"))
+        marr2 = (datetime.strptime(families[f[1]]["DATE"], "%d %b %Y"))
+
+        if marr1 > marr2 and div2 > marr1:
+            errors.append(f"Error: Bigamy in families {f[0]} and {f[1]}")
+            continue
+        if marr2 > marr1 and div1 > marr2:
+            errors.append(f"Error: Bigamy in families {f[0]} and {f[1]}")
+    return errors
+    
+
+
+## US12 Mother should be less than 60 years older than her children
+##  and father should be less than 80 years older than his children
+def parentsNotTooOld(individuals, families):
+    errors = []
+    today = date.today()
+    for f in families:
+        husb_bd = individuals[families[f]['HUSB']]['DATE'].split()
+        husb_bd = date(int(husb_bd[2]), convert_month[husb_bd[1]], int(husb_bd[0]))
+        husb_age = today.year - husb_bd.year -((today.month, today.day) < (husb_bd.month, husb_bd.day))
+        wife_bd = individuals[families[f]['WIFE']]['DATE'].split()
+        wife_bd = date(int(wife_bd[2]), convert_month[wife_bd[1]], int(wife_bd[0]))
+        wife_age = today.year - wife_bd.year -((today.month, today.day) < (wife_bd.month, wife_bd.day))
+        for c in families[f]['CHIL']:
+            chil_bd = individuals[c]['DATE'].split()
+            chil_bd = date(int(chil_bd[2]), convert_month[chil_bd[1]], int(chil_bd[0]))
+            chil_age = today.year - chil_bd.year -((today.month, today.day) < (chil_bd.month, chil_bd.day))
+            if husb_age - chil_age > 80:
+                errors.append(f"Error: {families[f]['HUSB']} is 80+ years older than child {c}")
+            if wife_age - chil_age > 60:
+                errors.append(f"Error: {families[f]['WIFE']} is 60+ years older than child {c}")
+    return errors
     
 
 ## find errors
@@ -579,6 +626,11 @@ def findErrors(individuals, families):
     errors += birthAfterDeathOfParents(individuals, families)
     errors += siblingSpacingErrors(individuals, families)
     errors += multipleBirthsErrors(individuals, families)
+    errors += fewerThan15Siblings(families)
+    errors += malesLastName(individuals, families)
+    errors += noBigamy(families)
+    errors += parentsNotTooOld(individuals, families)
+    
     return errors
 
 ## main
@@ -655,8 +707,11 @@ if __name__ == "__main__":
     #US15
     too_many_siblings = fewerThan15Siblings(families)
     #US16
-    male_last_names = malesLastName(families, individuals)
-
+    male_last_names = malesLastName(individuals, families)
+    #US11
+    bigamy = noBigamy(families)
+    #US12
+    parents_too_old = parentsNotTooOld(individuals, families)
 
     '''
     File output for sprint turn in
@@ -692,6 +747,9 @@ if __name__ == "__main__":
     output.write('\n US14: multiple births errors: ' + str(multiple_births_errors))
     output.write('\n US15: fewer than 15 siblings errors: ' + str(too_many_siblings))
     output.write('\n US16: males with different last name errors: ' + str(male_last_names))
+    output.write('\n US11: bigamy: ' + str(bigamy))
+    output.write('\n US12: parents too much older than children: ' + str(parents_too_old))
+    
 
 
     output.close()
