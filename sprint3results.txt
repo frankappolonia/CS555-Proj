@@ -23,9 +23,5 @@
 | F3 | 1960-08-09 |    NA    |     I5     |    Frank /Arace/    |    I3   |   Sandra /Arace/  |       ['I2']       |
 | F4 | 1970-05-01 |    NA    |    I10     |   Joseph /Lalori/   |    I7   | Mary /Racconelli/ |      ['I11']       |
 +----+------------+----------+------------+---------------------+---------+-------------------+--------------------+
- US13: sibling spacing errors: []
- US14: multiple births errors: []
- US15: fewer than 15 siblings errors: []
- US16: males with different last name errors: []
- US11: bigamy: ['Error: Bigamy in families @F2@ and @F4@']
- US12: parents too much older than children: []
+ US19: first cousins should not marry: []
+ US20: aunts/uncles shouldnt marry nieces/nephews: []

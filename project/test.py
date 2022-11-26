@@ -105,7 +105,6 @@ class SprintTests(unittest.TestCase):
         e = parentsNotTooOld(self.i1, self.f1)
         self.assertEqual(e, [])
         
-
     
 if __name__ == '__main__':
     unittest.main()

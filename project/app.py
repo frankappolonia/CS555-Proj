@@ -6,7 +6,7 @@ from prettytable import PrettyTable
 from datetime import date, datetime, timedelta
 from dateutil.relativedelta import relativedelta
 import traceback
-
+import itertools
 
 # GLOBALS
 working_directory = os.getcwd()
@@ -613,6 +613,42 @@ def parentsNotTooOld(individuals, families):
     return errors
     
 
+#US19 first cousins should not marry
+def noFirstCousinMarriage(families):
+    badMarriages = []
+    for key in families:
+        husb = families[key]['HUSB']
+        wife = families[key]['WIFE']
+        for k in families:
+            if husb in families[k]['CHIL'] and wife in families[k]['CHIL']:
+                badMarriages.append([husb, wife])
+                break
+    return badMarriages
+
+#US20 Aunts & Uncles must not marry nephews or nieces
+def auntsUnclesMarryingNephews(families):
+    badMarriages = []
+    for key in families:
+        #get sibilings
+        siblings = families[key]['CHIL']
+        if len(siblings) == 1 or len(siblings) == 0: 
+            #if only child or no child, cant marry niece/nephew
+            break
+
+        children = []
+        for k in siblings:
+            for j in families:
+                if k == families[j]['HUSB'] or families[j]['WIFE'] == k:
+                    children += families[j]['CHIL']
+
+        for l in families:
+            if families[l]['HUSB'] in siblings or families[l]['WIFE'] in siblings:
+                if families[l]['HUSB'] in children or families[l]['WIFE'] in children:
+                    badMarriages.append([families[l]['HUSB'], families[l]['WIFE']])
+
+    return badMarriages
+
+
 ## find errors
 def findErrors(individuals, families):
     errors = []
@@ -642,8 +678,8 @@ if __name__ == "__main__":
     storedData = storeInDataStructures()
     individuals, families = storedData
 
+    print(families)
     print(individuals)
-    #print(individuals)
     # create data table
     individualsTable = createIndividualsTable(individuals)
     familiesTable = createFamiliesTable(families)
@@ -713,6 +749,18 @@ if __name__ == "__main__":
     #US12
     parents_too_old = parentsNotTooOld(individuals, families)
 
+
+    '''
+    SPRINT 4
+    -------------------------------------------------------------
+    '''
+    #US19 
+    cousinsMarried = noFirstCousinMarriage(families)
+    #US20
+    auntsMarryingNieces = auntsUnclesMarryingNephews(families)
+
+    
+
     '''
     File output for sprint turn in
     -------------------------------------------------------
@@ -743,14 +791,19 @@ if __name__ == "__main__":
     '''
 
     #Sprint 3
+    ''' 
     output.write('\n US13: sibling spacing errors: ' + str(sibling_spacing_errors))
     output.write('\n US14: multiple births errors: ' + str(multiple_births_errors))
     output.write('\n US15: fewer than 15 siblings errors: ' + str(too_many_siblings))
     output.write('\n US16: males with different last name errors: ' + str(male_last_names))
     output.write('\n US11: bigamy: ' + str(bigamy))
     output.write('\n US12: parents too much older than children: ' + str(parents_too_old))
+    '''
     
 
+    #Sprint 4
+    output.write('\n US19: first cousins should not marry: ' + str(cousinsMarried))
+    output.write('\n US20: aunts/uncles shouldnt marry nieces/nephews: ' + str(auntsMarryingNieces))
 
     output.close()
 
