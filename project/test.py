@@ -105,6 +105,16 @@ class SprintTests(unittest.TestCase):
         e = parentsNotTooOld(self.i1, self.f1)
         self.assertEqual(e, [])
         
-    
+    def test15_sprint4(self):
+        #US 19
+        e = noFirstCousinMarriage(self.f1)
+        self.assertEqual(e, [])
+
+    def test16_sprint4(self):
+        #US 19
+        e = auntsUnclesMarryingNephews(self.f1)
+        self.assertEqual(e, [])
+
+
 if __name__ == '__main__':
     unittest.main()
