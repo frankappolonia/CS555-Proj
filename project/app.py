@@ -649,6 +649,42 @@ def auntsUnclesMarryingNephews(families):
     return badMarriages
 
 
+#US17 No marriages to descendants
+def noMarriageToDescendants(families):
+    badMarriages = []
+    visited = []
+    for key in families:
+        husband = families[key]['HUSB']
+        wife = families[key]['WIFE']
+        descendants = families[key]['CHIL']
+        while descendants:
+            d, descendants = descendants[0], descendants[1:]
+            if d not in visited:
+                if d == families[key]['HUSB'] or d == families[key]['WIFE']:
+                    badMarriages.append(f"Error: Marriage to descendant in family {key} between {families[key]['HUSB']} and {families[key]['WIFE']}")
+                for fam in families:
+                    if d == families[fam]['WIFE'] or d == families[fam]['HUSB']:
+                        descendants+=families[fam]['CHIL']
+                        if husband == families[fam]['HUSB'] or wife == families[fam]['WIFE']:
+                            badMarriages.append(f"Error: Marriage to descendant in family {key} between {families[key]['HUSB']} and {families[key]['WIFE']}")
+            visited.append(d)
+    return list(set(badMarriages))
+
+
+#US 18 Siblings should not marry
+def noMarriageToSiblings(families):
+    badMarriages = []
+    for key in families:
+        children = families[key]['CHIL']
+        if len(children) > 1:
+            for fam in families:
+                husb = families[fam]['HUSB']
+                wife = families[fam]['WIFE']
+                if husb in children and wife in children and husb != wife:
+                    badMarriages.append(f"Error: Marriage between siblings {husb} and {wife} in family {fam}")
+    return badMarriages
+
+
 ## find errors
 def findErrors(individuals, families):
     errors = []
@@ -666,7 +702,10 @@ def findErrors(individuals, families):
     errors += malesLastName(individuals, families)
     errors += noBigamy(families)
     errors += parentsNotTooOld(individuals, families)
-    
+    errors += noFirstCousinMarriage(families)
+    errors += auntsUnclesMarryingNephews(families)
+    errors += noMarriageToDescendants(families)
+    errors += noMarriageToSiblings(families)
     return errors
 
 ## main
@@ -735,7 +774,7 @@ if __name__ == "__main__":
     '''
     SPRINT 3
     -------------------------------------------------------
-    '''
+    
     #US13
     sibling_spacing_errors = siblingSpacingErrors(individuals, families)
     #US14
@@ -748,12 +787,16 @@ if __name__ == "__main__":
     bigamy = noBigamy(families)
     #US12
     parents_too_old = parentsNotTooOld(individuals, families)
-
+    '''
 
     '''
     SPRINT 4
     -------------------------------------------------------------
     '''
+    #US17
+    marriagesToDescendants = noMarriageToDescendants(families)
+    #US18
+    marraigesToSiblings = noMarriageToSiblings(families)
     #US19 
     cousinsMarried = noFirstCousinMarriage(families)
     #US20
@@ -766,7 +809,7 @@ if __name__ == "__main__":
     -------------------------------------------------------
     '''
     # output for sprint turn in
-    output = open("sprint3results.txt", "w")
+    output = open("sprint4results.txt", "w")
     output.write(str(individualsTable))
     output.write(str(familiesTable))
 
@@ -790,8 +833,8 @@ if __name__ == "__main__":
     output.write('\n US09: births after parents death ' + str(birthsafterparentdeaths))
     '''
 
-    #Sprint 3
     ''' 
+    #Sprint 3
     output.write('\n US13: sibling spacing errors: ' + str(sibling_spacing_errors))
     output.write('\n US14: multiple births errors: ' + str(multiple_births_errors))
     output.write('\n US15: fewer than 15 siblings errors: ' + str(too_many_siblings))
@@ -802,6 +845,8 @@ if __name__ == "__main__":
     
 
     #Sprint 4
+    output.write('\n US17: no marriage to descendants: ' + str(marriagesToDescendants))
+    output.write('\n US18: siblings should not marry: ' + str(marraigesToSiblings))
     output.write('\n US19: first cousins should not marry: ' + str(cousinsMarried))
     output.write('\n US20: aunts/uncles shouldnt marry nieces/nephews: ' + str(auntsMarryingNieces))
 

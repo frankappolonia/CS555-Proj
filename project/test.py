@@ -98,7 +98,7 @@ class SprintTests(unittest.TestCase):
     def test13_sprint3(self):
         #US 11
         e = noBigamy(self.f1)
-        self.assertEqual(len(e), 1)
+        self.assertEqual(len(e), 0)
 
     def test14_sprint3(self):
         #US 12
@@ -114,7 +114,17 @@ class SprintTests(unittest.TestCase):
         #US 19
         e = auntsUnclesMarryingNephews(self.f1)
         self.assertEqual(e, [])
+    
+    def test17_sprint4(self):
+        #US 17
+        e = noMarriageToDescendants(self.f1)
+        self.assertEqual(e, [])
 
+    def test18_sprint4(self):
+        #US 17
+        e = noMarriageToSiblings(self.f1)
+        self.assertEqual(e, [])
 
+        
 if __name__ == '__main__':
     unittest.main()
