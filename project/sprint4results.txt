@@ -1,0 +1,30 @@
++----------------------------------------------------------------------------------------------------------+
+|                                               Individuals                                                |
++-----+---------------------------+--------+------------+-----+-------+------------+--------+--------------+
+|  ID |            Name           | Gender |  Birthday  | Age | Alive |   Death    | Child  |    Spouse    |
++-----+---------------------------+--------+------------+-----+-------+------------+--------+--------------+
+|  I1 |    Matthew /Appolonia/    |   M    | 1965-12-08 |  56 |  True |     NA     | ['F2'] |    ['F1']    |
+|  I2 |     Catherine /Arace/     |   F    | 1975-08-04 |  47 |  True |     NA     | ['F3'] |    ['F1']    |
+|  I3 |       Sandra /Arace/      |   F    | 1942-06-12 |  80 |  True |     NA     | ['F1'] |    ['F3']    |
+|  I5 |       Frank /Arace/       |   M    | 1940-02-02 |  82 | False | 2005-02-14 |   NA   |    ['F3']    |
+|  I6 |    Anthony /Appolonia/    |   M    | 1935-04-18 |  87 | False | 1968-01-13 |   NA   |    ['F2']    |
+|  I7 |     Mary /Racconelli/     |   F    | 1935-06-20 |  87 | False | 2019-08-10 |   NA   | ['F2', 'F4'] |
+|  I8 |     Maria /Appolonia/     |   F    | 1995-06-13 |  27 |  True |     NA     | ['F1'] |      NA      |
+|  I9 | Matthew Louis /Appolonia/ |   M    | 2002-05-04 |  20 |  True |     NA     | ['F1'] |      NA      |
+| I10 |      Joseph /Lalori/      |   M    | 1935-09-07 |  87 | False | 2012-06-12 |   NA   |    ['F4']    |
+| I11 |      Patrick /Lalori/     |   M    | 1972-01-01 |  50 |  True |     NA     | ['F4'] |      NA      |
++-----+---------------------------+--------+------------+-----+-------+------------+--------+--------------++------------------------------------------------------------------------------------------------------------------+
+|                                                     Families                                                     |
++----+------------+----------+------------+---------------------+---------+-------------------+--------------------+
+| ID |  Married   | Divorced | Husband ID |     Husband Name    | Wife ID |     Wife Name     |      Children      |
++----+------------+----------+------------+---------------------+---------+-------------------+--------------------+
+| F1 | 1990-03-10 |    NA    |     I1     | Matthew /Appolonia/ |    I2   | Catherine /Arace/ | ['I3', 'I8', 'I9'] |
+| F2 | 1955-01-01 |    NA    |     I6     | Anthony /Appolonia/ |    I7   | Mary /Racconelli/ |       ['I1']       |
+| F3 | 1960-08-09 |    NA    |     I5     |    Frank /Arace/    |    I3   |   Sandra /Arace/  |       ['I2']       |
+| F4 | 1970-05-01 |    NA    |    I10     |   Joseph /Lalori/   |    I7   | Mary /Racconelli/ |      ['I11']       |
++----+------------+----------+------------+---------------------+---------+-------------------+--------------------+
+ US17: no marriage to descendants: ['Error: Marriage to descendant in family @F1@ between @I1@ and @I2@']
+ US18: siblings should not marry: []
+ US19: first cousins should not marry: []
+ US20: aunts/uncles shouldnt marry nieces/nephews: []
+ US21: Husband should be male and Wife should be female: []

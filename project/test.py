@@ -125,6 +125,15 @@ class SprintTests(unittest.TestCase):
         e = noMarriageToSiblings(self.f1)
         self.assertEqual(e, [])
 
+    def test19_sprint4(self):
+        #US 21
+        e = correctGender(self.i1, self.f1)
+        self.assertEqual(e, [])
+
+    def test20_sprint4(self):
+        #US 28
+        e = createFamiliesTable(self.f1, self.i1)
+        # assert no errors
         
 if __name__ == '__main__':
     unittest.main()

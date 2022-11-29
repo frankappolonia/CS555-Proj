@@ -248,7 +248,7 @@ def createIndividualsTable(individuals):
 
 
 ## families table
-def createFamiliesTable(families):
+def createFamiliesTable(families, individuals):
     ftable = PrettyTable()
     ftable.title = "Families"
     ftable.field_names = ["ID","Married","Divorced","Husband ID","Husband Name","Wife ID","Wife Name","Children"]
@@ -285,6 +285,13 @@ def createFamiliesTable(families):
                 temp = []
                 for j in info['CHIL']:
                     temp.append(j[1:-1]) # remove @ signs on beginning and end
+                # US 28 Order siblings by age
+                def getTime(ind):
+                    if ind[0] != '@':
+                        ind = '@' + ind + '@'
+                    bd = individuals[ind]['DATE'].split()
+                    return date(int(bd[2]), convert_month[bd[1]], int(bd[0]))
+                temp.sort(key=getTime)
                 to_add.append(temp)
             else:
                 to_add.append("NA")  
@@ -684,6 +691,20 @@ def noMarriageToSiblings(families):
                     badMarriages.append(f"Error: Marriage between siblings {husb} and {wife} in family {fam}")
     return badMarriages
 
+#US 21 Husband in family should be male and wife in family should be female
+def correctGender(individuals, families):
+    errors = []
+    for fam in families:
+        husb = families[fam]['HUSB']
+        wife = families[fam]['WIFE']
+        if individuals[husb]['SEX'] != 'M':
+            errors.append(f"Error: Husband {husb} in family {fam} not of male sex")
+        if individuals[wife]['SEX'] != 'F':
+            errors.append(f"Error: Wife {wife} in family {fam} not of female sex")
+    return errors
+
+        
+
 
 ## find errors
 def findErrors(individuals, families):
@@ -706,6 +727,7 @@ def findErrors(individuals, families):
     errors += auntsUnclesMarryingNephews(families)
     errors += noMarriageToDescendants(families)
     errors += noMarriageToSiblings(families)
+    errors += correctGender(individuals, families)
     return errors
 
 ## main
@@ -721,7 +743,7 @@ if __name__ == "__main__":
     print(individuals)
     # create data table
     individualsTable = createIndividualsTable(individuals)
-    familiesTable = createFamiliesTable(families)
+    familiesTable = createFamiliesTable(families, individuals)
 
     # print table with individuals and families
     print(individualsTable)
@@ -801,6 +823,8 @@ if __name__ == "__main__":
     cousinsMarried = noFirstCousinMarriage(families)
     #US20
     auntsMarryingNieces = auntsUnclesMarryingNephews(families)
+    #US21
+    correctGenderInMarriage = correctGender(individuals, families)
 
     
 
@@ -849,6 +873,7 @@ if __name__ == "__main__":
     output.write('\n US18: siblings should not marry: ' + str(marraigesToSiblings))
     output.write('\n US19: first cousins should not marry: ' + str(cousinsMarried))
     output.write('\n US20: aunts/uncles shouldnt marry nieces/nephews: ' + str(auntsMarryingNieces))
+    output.write('\n US21: Husband should be male and Wife should be female: ' + str(correctGenderInMarriage))
 
     output.close()
 
